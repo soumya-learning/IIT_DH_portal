@@ -4,6 +4,9 @@ import pandas as pd
 from datetime import date, timedelta
 import math
 
+
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
@@ -11,16 +14,28 @@ SUPABASE_URL = "https://peagkvkhhsbdytevnhia.supabase.co"
 SUPABASE_KEY = "sb_secret_Q0zxaI4Myb6lY0IWZKgjLw_pXGH5zXj"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+
+
+
 st.set_page_config(page_title="IITDH Attendance Portal", page_icon="🎓", layout="wide")
+
+
+
 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
+
+
+
 .stApp, .main { background-color: #ffffff !important; font-family: 'Sora', sans-serif !important; }
 .block-container { padding-top: 2.5rem !important; background-color: #ffffff !important; }
 h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-serif !important; }
 .stMarkdown p { color: #111111 !important; }
+
+
+
 
 /* ── Nav buttons ──────────────────────────────────────────── */
 .nav-btn button {
@@ -61,6 +76,9 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
 [data-testid="stMetricLabel"] { color: #555555 !important; font-size: 0.82rem !important; }
 [data-testid="stMetricValue"] { color: #111111 !important; font-size: 1.6rem !important; font-weight: 700 !important; }
 
+
+
+
 /* ── Session card ─────────────────────────────────────────── */
 .sess-card {
     background: #f9fafb; border: 1px solid #e5e7eb;
@@ -77,6 +95,9 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
 .sess-card-meta { font-family:'JetBrains Mono',monospace; font-size:0.75rem;
                   color:#777777; margin-top:0.3rem; }
 
+
+
+
 /* ── Hero banner ──────────────────────────────────────────── */
 .hero-wrap {
     background: #f3f4f6; border: 1px solid #d1d5db;
@@ -88,6 +109,9 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
 .hero-sub   { font-size:0.88rem; color:#555555; margin:0; }
 .hero-date  { font-family:'JetBrains Mono',monospace; font-size:0.82rem; color:#111111; margin-top:0.5rem; }
 
+
+
+
 /* ── Section headers ──────────────────────────────────────── */
 .sec-header {
     font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700;
@@ -96,9 +120,15 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
     text-transform: uppercase; letter-spacing: 0.06em;
 }
 
+
+
+
 /* ── Expander ─────────────────────────────────────────────── */
 [data-testid="stExpander"] { border: 1px solid #e5e7eb !important; border-radius: 8px !important; margin-bottom: 0.5rem !important; }
 [data-testid="stExpander"] summary > span { font-family: 'JetBrains Mono', monospace !important; font-size: 0.83rem !important; color: #111111 !important; font-weight: 600 !important; }
+
+
+
 
 /* ── Status bar ───────────────────────────────────────────── */
 .status-bar {
@@ -107,6 +137,9 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
     padding: 5px 0; font-size: 11px; font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.06em; z-index: 9999; border-top: 1px solid #333;
 }
+
+
+
 
 /* ── Click hint ───────────────────────────────────────────── */
 .click-hint {
@@ -119,17 +152,23 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
 """, unsafe_allow_html=True)
 
 
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Columns to never show anywhere on the site
-HIDDEN_COLS = {"template", "created_at","password_hash"}
+
+HIDDEN_COLS = {"template", "created_at", "password_hash"}
+
+
+
 
 def clean(df):
-    """Drop hidden columns from a dataframe before display."""
     drop = [c for c in df.columns if c in HIDDEN_COLS]
     return df.drop(columns=drop, errors="ignore")
+
+
 
 
 @st.cache_data(ttl=60)
@@ -141,15 +180,26 @@ def fetch_table(table_name):
         st.error(f"Error fetching {table_name}: {e}")
         return pd.DataFrame()
 
+
+
+
 def detect_date_col(df):
-    for c in ["date","class_date","attendance_date","timestamp","created_at"]:
-        if c in df.columns: return c
+    for c in ["date", "class_date", "attendance_date", "timestamp", "created_at"]:
+        if c in df.columns:
+            return c
     return None
 
+
+
+
 def detect_stu_id_col(df):
-    for c in ["student_id","roll_no","roll","id"]:
-        if c in df.columns: return c
+    for c in ["student_id", "roll_no", "roll", "id"]:
+        if c in df.columns:
+            return c
     return None
+
+
+
 
 def activity_ring_html(attended, total, student_label=""):
     pct   = round((attended / total) * 100, 1) if total > 0 else 0
@@ -186,6 +236,8 @@ def activity_ring_html(attended, total, student_label=""):
     </div>"""
 
 
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DATA
 # ─────────────────────────────────────────────────────────────────────────────
@@ -194,33 +246,44 @@ students_df   = fetch_table("students")
 courses_df    = fetch_table("courses")
 profs_df      = fetch_table("profs")
 
+
 date_col     = detect_date_col(attendance_df)
 stu_id_col_a = detect_stu_id_col(attendance_df)
 stu_id_col_s = detect_stu_id_col(students_df)
 
+
 if not attendance_df.empty and date_col:
     attendance_df[date_col] = pd.to_datetime(attendance_df[date_col], errors="coerce")
 
+
+
+
 def build_course_lookup():
     lookup = {}
-    if courses_df.empty: return lookup
-    name_c = next((c for c in ["course_name","name","title"] if c in courses_df.columns), None)
-    prof_c = next((c for c in ["prof_name","professor_name","instructor","faculty"] if c in courses_df.columns), None)
+    if courses_df.empty:
+        return lookup
+    name_c = next((c for c in ["course_name", "name", "title"] if c in courses_df.columns), None)
+    prof_c = next((c for c in ["prof_name", "professor_name", "instructor", "faculty"] if c in courses_df.columns), None)
     prof_map = {}
     if not profs_df.empty:
-        pid = next((c for c in ["prof_id","id"] if c in profs_df.columns), None)
-        pnm = next((c for c in ["prof_name","name","full_name"] if c in profs_df.columns), None)
+        pid = next((c for c in ["prof_id", "id"] if c in profs_df.columns), None)
+        pnm = next((c for c in ["prof_name", "name", "full_name"] if c in profs_df.columns), None)
         if pid and pnm:
             for _, r in profs_df.iterrows():
                 prof_map[str(r[pid])] = str(r[pnm])
     for _, row in courses_df.iterrows():
-        code  = str(row.get("course_code",""))
+        code  = str(row.get("course_code", ""))
         cname = str(row.get(name_c, code)) if name_c else code
         pval  = str(row.get(prof_c, ""))   if prof_c else ""
         lookup[code] = {"name": cname, "prof": prof_map.get(pval, pval)}
     return lookup
 
+
+
+
 course_lookup = build_course_lookup()
+
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -228,8 +291,10 @@ course_lookup = build_course_lookup()
 # ─────────────────────────────────────────────────────────────────────────────
 NAV_LABELS = ["Home", "Attendance", "Students", "Professors", "Courses", "Att. Log"]
 
+
 if "page" not in st.session_state:
     st.session_state.page = "Home"
+
 
 nav_cols = st.columns(len(NAV_LABELS))
 for i, label in enumerate(NAV_LABELS):
@@ -241,8 +306,11 @@ for i, label in enumerate(NAV_LABELS):
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+
 page = st.session_state.page
 st.markdown("<hr style='margin:0 0 1.2rem 0; border-color:#e5e7eb;'>", unsafe_allow_html=True)
+
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -252,6 +320,7 @@ if page == "Home":
     today     = date.today()
     today_str = today.strftime("%A, %d %B %Y")
 
+
     st.markdown(f"""
     <div class="hero-wrap">
       <div class="hero-title">IITDH Attendance Portal</div>
@@ -259,11 +328,13 @@ if page == "Home":
       <div class="hero-date">{today_str}</div>
     </div>""", unsafe_allow_html=True)
 
+
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Students",     len(students_df)   if not students_df.empty   else 0)
     c2.metric("Courses",      len(courses_df)    if not courses_df.empty    else 0)
     c3.metric("Faculty",      len(profs_df)      if not profs_df.empty      else 0)
     c4.metric("Total Swipes", len(attendance_df) if not attendance_df.empty else 0)
+
 
     st.markdown('<div class="sec-header">Sessions Today</div>', unsafe_allow_html=True)
     if attendance_df.empty or not date_col:
@@ -286,6 +357,7 @@ if page == "Home":
                       <div class="sess-card-meta">{len(grp)} swipe(s) recorded</div>
                     </div>""", unsafe_allow_html=True)
 
+
     st.markdown('<div class="sec-header">Recent Sessions — Last 7 Days</div>', unsafe_allow_html=True)
     if not attendance_df.empty and date_col:
         week_ago = pd.Timestamp(today) - timedelta(days=7)
@@ -294,7 +366,7 @@ if page == "Home":
         if recent.empty:
             st.info("No sessions in the last 7 days.")
         else:
-            sessions = (recent.groupby(["_date","course_code"])
+            sessions = (recent.groupby(["_date", "course_code"])
                         .size().reset_index(name="swipes")
                         .sort_values("_date", ascending=False))
             cols = st.columns(3)
@@ -312,6 +384,8 @@ if page == "Home":
         st.info("No attendance data available.")
 
 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ATTENDANCE LOGS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -325,10 +399,11 @@ elif page == "Attendance":
         filt = attendance_df[attendance_df["course_code"].isin(sel_courses)]
         st.metric("Total Swipes Shown", len(filt))
 
+
         if date_col:
             filt = filt.copy()
             filt["_date"] = filt[date_col].dt.date
-            grouped     = filt.groupby(["_date","course_code"])
+            grouped     = filt.groupby(["_date", "course_code"])
             sorted_keys = sorted(grouped.groups.keys(), reverse=True)
             for (sess_date, code) in sorted_keys:
                 grp  = grouped.get_group((sess_date, code))
@@ -348,6 +423,8 @@ elif page == "Attendance":
                     st.dataframe(clean(grp.reset_index(drop=True)), use_container_width=True)
 
 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # STUDENT DIRECTORY
 # ══════════════════════════════════════════════════════════════════════════════
@@ -363,6 +440,8 @@ elif page == "Students":
         st.info("No students enrolled yet.")
 
 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # PROFESSOR LIST
 # ══════════════════════════════════════════════════════════════════════════════
@@ -372,6 +451,8 @@ elif page == "Professors":
         st.table(clean(profs_df))
     else:
         st.info("No professor records found.")
+
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -388,9 +469,9 @@ elif page == "Courses":
             search_query = st.text_input("Search term", placeholder=f"Type {search_type.lower()}...")
         if search_query:
             col_map = {
-                "Course Code":    ["course_code","code"],
-                "Course Name":    ["course_name","name","title"],
-                "Professor Name": ["prof_name","professor_name","instructor","faculty"],
+                "Course Code":    ["course_code", "code"],
+                "Course Name":    ["course_name", "name", "title"],
+                "Professor Name": ["prof_name", "professor_name", "instructor", "faculty"],
             }
             mc = next((c for c in col_map[search_type] if c in df.columns), None)
             if mc:
@@ -403,6 +484,8 @@ elif page == "Courses":
         st.info("No courses created in database.")
 
 
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # STUDENT ATTENDANCE LOG
 # ══════════════════════════════════════════════════════════════════════════════
@@ -410,22 +493,109 @@ elif page == "Att. Log":
     st.header("Student Attendance Log")
     st.markdown('<div class="click-hint">Click any row in the table to see that student\'s attendance ring</div>', unsafe_allow_html=True)
 
+
     if courses_df.empty or attendance_df.empty or students_df.empty:
         st.info("Requires data in courses, attendance, and students tables.")
     else:
-        name_col_c = next((c for c in ["course_name","name","title"] if c in courses_df.columns), None)
+        name_col_c = next((c for c in ["course_name", "name", "title"] if c in courses_df.columns), None)
         id_col     = stu_id_col_s or (students_df.columns[0] if not students_df.empty else "id")
-        name_col_s = next((c for c in ["name","student_name","full_name"] if c in students_df.columns), None)
+        name_col_s = next((c for c in ["name", "student_name", "full_name"] if c in students_df.columns), None)
 
-        for _, course_row in courses_df.iterrows():
-            code        = str(course_row.get("course_code",""))
+
+        # Build a prof name lookup: course_code -> prof name string (resolved from profs table)
+        prof_col_c = next((c for c in ["prof_name", "professor_name", "instructor", "faculty", "prof_id"] if c in courses_df.columns), None)
+
+
+        # ── Search Bar ────────────────────────────────────────────────────────
+        st.markdown('<div class="sec-header">Search</div>', unsafe_allow_html=True)
+        search_col1, search_col2 = st.columns([1, 3])
+        with search_col1:
+            search_type = st.selectbox(
+                "Search by",
+                ["Course Code", "Course Name", "Professor Name", "Student Name", "Student ID"],
+                key="att_log_search_type"
+            )
+        with search_col2:
+            search_query = st.text_input(
+                "Search term",
+                placeholder=f"Type {search_type.lower()}...",
+                key="att_log_search_query"
+            )
+
+
+        # Build filtered course list based on search type
+        filtered_courses = courses_df.copy()
+
+
+        if search_query:
+            q = search_query.strip().lower()
+
+
+            if search_type == "Course Code":
+                filtered_courses = filtered_courses[
+                    filtered_courses["course_code"].astype(str).str.lower().str.contains(q, na=False)
+                ]
+
+
+            elif search_type == "Course Name":
+                if name_col_c:
+                    filtered_courses = filtered_courses[
+                        filtered_courses[name_col_c].astype(str).str.lower().str.contains(q, na=False)
+                    ]
+                else:
+                    filtered_courses = filtered_courses.iloc[0:0]
+
+
+            elif search_type == "Professor Name":
+                def get_prof_name(code):
+                    return course_lookup.get(str(code), {}).get("prof", "").lower()
+                mask = filtered_courses["course_code"].apply(get_prof_name).str.contains(q, na=False)
+                filtered_courses = filtered_courses[mask]
+
+
+            elif search_type in ("Student Name", "Student ID"):
+                stu_search_df = students_df.copy()
+                if search_type == "Student Name" and name_col_s:
+                    stu_search_df = stu_search_df[
+                        stu_search_df[name_col_s].astype(str).str.lower().str.contains(q, na=False)
+                    ]
+                elif search_type == "Student ID" and stu_id_col_s:
+                    stu_search_df = stu_search_df[
+                        stu_search_df[stu_id_col_s].astype(str).str.lower().str.contains(q, na=False)
+                    ]
+                matching_ids = stu_search_df[stu_id_col_s].tolist() if stu_id_col_s else []
+                if matching_ids and stu_id_col_a:
+                    relevant_codes = attendance_df[
+                        attendance_df[stu_id_col_a].isin(matching_ids)
+                    ]["course_code"].unique().tolist()
+                    filtered_courses = filtered_courses[filtered_courses["course_code"].isin(relevant_codes)]
+                else:
+                    filtered_courses = filtered_courses.iloc[0:0]
+
+
+        if filtered_courses.empty:
+            st.info("No courses match your search." if search_query else "No courses found.")
+        else:
+            st.markdown(
+                f"<p style='color:#555;font-size:0.85rem;margin-bottom:0.5rem;'>Showing <strong>{len(filtered_courses)}</strong> course(s)</p>",
+                unsafe_allow_html=True
+            )
+
+
+        # ── Course Expanders ──────────────────────────────────────────────────
+        for _, course_row in filtered_courses.iterrows():
+            code        = str(course_row.get("course_code", ""))
             course_name = str(course_row.get(name_col_c, code)) if name_col_c else code
+            info        = course_lookup.get(code, {"name": course_name, "prof": "—"})
+            prof_name   = info.get("prof", "—") or "—"
             course_att  = attendance_df[attendance_df["course_code"] == code].copy()
+
 
             if date_col:
                 total_classes = course_att[date_col].dt.date.nunique()
             else:
                 total_classes = len(course_att)
+
 
             if stu_id_col_a and stu_id_col_s:
                 if date_col:
@@ -436,21 +606,70 @@ elif page == "Att. Log":
                     per_stu = (course_att.groupby(stu_id_col_a)
                                .size().reset_index(name="Classes Attended"))
 
+
                 merged = students_df.merge(
                     per_stu.rename(columns={stu_id_col_a: stu_id_col_s}),
                     on=stu_id_col_s, how="left"
                 )
                 merged["Classes Attended"] = merged["Classes Attended"].fillna(0).astype(int)
-                # build display_df keeping original student cols (minus hidden) + Classes Attended
+
+
+                # Filter rows to matching students when searching by student
+                if search_query and search_type in ("Student Name", "Student ID"):
+                    q = search_query.strip().lower()
+                    if search_type == "Student Name" and name_col_s:
+                        merged = merged[
+                            merged[name_col_s].astype(str).str.lower().str.contains(q, na=False)
+                        ]
+                    elif search_type == "Student ID" and stu_id_col_s:
+                        merged = merged[
+                            merged[stu_id_col_s].astype(str).str.lower().str.contains(q, na=False)
+                        ]
+
+
                 orig_cols  = [c for c in students_df.columns if c not in HIDDEN_COLS]
                 display_df = merged[orig_cols + ["Classes Attended"]].reset_index(drop=True)
             else:
                 display_df = clean(students_df.copy()).reset_index(drop=True)
 
-            with st.expander(f"{code}  —  {course_name}   |   Total Classes Held: {total_classes}", expanded=False):
+
+            expander_label = (
+                f"{code}  —  {course_name}"
+                f"   |   Prof: {prof_name}"
+                f"   |   Total Classes Held: {total_classes}"
+            )
+
+
+            with st.expander(expander_label, expanded=bool(search_query)):
+                # ── Course info strip ─────────────────────────────────────────
+                ci1, ci2, ci3 = st.columns(3)
+                ci1.markdown(f"**Course Code:** `{code}`")
+                ci2.markdown(f"**Professor:** {prof_name}")
+                ci3.markdown(f"**Classes Held:** {total_classes}")
+
+
+                # Show any extra course fields from Supabase (credits, type, semester, etc.)
+                extra_course_cols = [
+                    c for c in courses_df.columns
+                    if c not in HIDDEN_COLS
+                    and c not in {"course_code", "course_name", "name", "title",
+                                  "prof_name", "professor_name", "instructor", "faculty", "prof_id"}
+                ]
+                if extra_course_cols:
+                    extra_vals = {c: course_row.get(c, "") for c in extra_course_cols if pd.notna(course_row.get(c, ""))}
+                    if extra_vals:
+                        ex_cols = st.columns(min(4, len(extra_vals)))
+                        for i, (k, v) in enumerate(extra_vals.items()):
+                            ex_cols[i % len(ex_cols)].markdown(f"**{k.replace('_',' ').title()}:** {v}")
+
+
+                st.markdown("---")
+
+
                 if display_df.empty:
-                    st.info("No students enrolled.")
+                    st.info("No students match your search for this course." if search_query else "No students enrolled.")
                     continue
+
 
                 event = st.dataframe(
                     display_df,
@@ -460,7 +679,9 @@ elif page == "Att. Log":
                     key=f"sel_{code}",
                 )
 
+
                 selected_rows = event.selection.rows if event and hasattr(event, "selection") else []
+
 
                 if selected_rows:
                     stu_row  = display_df.iloc[selected_rows[0]]
@@ -470,6 +691,7 @@ elif page == "Att. Log":
                     stu_name = stu_row.get(name_col_s, "") if name_col_s else ""
                     label    = f"{stu_id}  ·  {stu_name}" if stu_name else str(stu_id)
 
+
                     st.markdown("---")
                     ring_col, info_col = st.columns([1, 1])
                     with ring_col:
@@ -478,9 +700,11 @@ elif page == "Att. Log":
                         st.markdown(f"**Student ID:** `{stu_id}`")
                         if name_col_s:
                             st.markdown(f"**Name:** {stu_name}")
-                        for col in ["year","department","program","dept","branch"]:
-                            if col in stu_row.index and pd.notna(stu_row[col]):
-                                st.markdown(f"**{col.capitalize()}:** {stu_row[col]}")
+                        # Show all student fields from Supabase dynamically
+                        skip_cols = {id_col, name_col_s, "Classes Attended"} | HIDDEN_COLS
+                        for col in stu_row.index:
+                            if col not in skip_cols and pd.notna(stu_row[col]) and str(stu_row[col]).strip():
+                                st.markdown(f"**{col.replace('_',' ').title()}:** {stu_row[col]}")
                         st.markdown(f"**Attended:** {attended} / {total_classes} classes")
                         if pct >= 75:
                             st.success(f"**{pct}%** — Eligible")
@@ -488,3 +712,4 @@ elif page == "Att. Log":
                             st.warning(f"**{pct}%** — At Risk")
                         else:
                             st.error(f"**{pct}%** — Below Threshold")
+
