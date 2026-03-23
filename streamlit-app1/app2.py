@@ -122,6 +122,16 @@ h1, h2, h3, h4, h5, h6 { color: #111111 !important; font-family: 'Sora', sans-se
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
+
+# Columns to never show anywhere on the site
+HIDDEN_COLS = {"template", "created_at","password_hash"}
+
+def clean(df):
+    """Drop hidden columns from a dataframe before display."""
+    drop = [c for c in df.columns if c in HIDDEN_COLS]
+    return df.drop(columns=drop, errors="ignore")
+
+
 @st.cache_data(ttl=60)
 def fetch_table(table_name):
     try:
@@ -214,17 +224,17 @@ course_lookup = build_course_lookup()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# NAVIGATION  — full-width columns + buttons (guaranteed single line)
+# NAVIGATION
 # ─────────────────────────────────────────────────────────────────────────────
 NAV_LABELS = ["Home", "Attendance", "Students", "Professors", "Courses", "Att. Log"]
 
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
-cols = st.columns(len(NAV_LABELS))
+nav_cols = st.columns(len(NAV_LABELS))
 for i, label in enumerate(NAV_LABELS):
     css_class = "nav-btn-active" if st.session_state.page == label else "nav-btn"
-    with cols[i]:
+    with nav_cols[i]:
         st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
         if st.button(label, key=f"nav_{label}", use_container_width=True):
             st.session_state.page = label
@@ -329,13 +339,13 @@ elif page == "Attendance":
                     f"Prof: {info['prof'] or '—'}  |  "
                     f"{len(grp)} swipe(s)"
                 ):
-                    st.dataframe(grp.drop(columns=["_date"], errors="ignore").reset_index(drop=True), use_container_width=True)
+                    st.dataframe(clean(grp.drop(columns=["_date"], errors="ignore").reset_index(drop=True)), use_container_width=True)
         else:
             for code in sel_courses:
                 grp  = filt[filt["course_code"] == code]
                 info = course_lookup.get(code, {"name": code, "prof": "—"})
                 with st.expander(f"{code} — {info['name']}  |  {len(grp)} swipe(s)"):
-                    st.dataframe(grp.reset_index(drop=True), use_container_width=True)
+                    st.dataframe(clean(grp.reset_index(drop=True)), use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -348,7 +358,7 @@ elif page == "Students":
         search = st.text_input("Search by Name or ID")
         if search:
             df = df[df.astype(str).apply(lambda x: x.str.contains(search, case=False)).any(axis=1)]
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(clean(df), use_container_width=True)
     else:
         st.info("No students enrolled yet.")
 
@@ -359,8 +369,7 @@ elif page == "Students":
 elif page == "Professors":
     st.header("Faculty Members")
     if not profs_df.empty:
-        cols_to_show = [c for c in profs_df.columns if c != "template"]
-        st.table(profs_df[cols_to_show])
+        st.table(clean(profs_df))
     else:
         st.info("No professor records found.")
 
@@ -389,7 +398,7 @@ elif page == "Courses":
             else:
                 st.warning(f"Column for '{search_type}' not found. Available: {list(df.columns)}")
         st.write(f"Showing **{len(df)}** course(s):")
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(clean(df), use_container_width=True)
     else:
         st.info("No courses created in database.")
 
@@ -432,9 +441,11 @@ elif page == "Att. Log":
                     on=stu_id_col_s, how="left"
                 )
                 merged["Classes Attended"] = merged["Classes Attended"].fillna(0).astype(int)
-                display_df = merged[list(students_df.columns) + ["Classes Attended"]].reset_index(drop=True)
+                # build display_df keeping original student cols (minus hidden) + Classes Attended
+                orig_cols  = [c for c in students_df.columns if c not in HIDDEN_COLS]
+                display_df = merged[orig_cols + ["Classes Attended"]].reset_index(drop=True)
             else:
-                display_df = students_df.copy().reset_index(drop=True)
+                display_df = clean(students_df.copy()).reset_index(drop=True)
 
             with st.expander(f"{code}  —  {course_name}   |   Total Classes Held: {total_classes}", expanded=False):
                 if display_df.empty:
