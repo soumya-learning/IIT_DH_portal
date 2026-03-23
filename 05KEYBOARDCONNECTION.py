@@ -161,7 +161,7 @@ if not HW_FINGERPRINT_CONNECTED:
     print("⚠️  Fingerprint skipped  (HW_FINGERPRINT_CONNECTED = False)")
 else:
     try:
-        uart   = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=2)
+        uart   = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=2)
         finger = Adafruit_Fingerprint(uart)
         FINGERPRINT_AVAILABLE = True
         print("✅ Fingerprint sensor initialized")

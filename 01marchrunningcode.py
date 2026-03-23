@@ -61,7 +61,7 @@ try:
     device.contrast(255)
 
     # R307S via USB-UART or GPIO-UART
-    uart = serial.Serial("/dev/ttyUSB0", baudrate=57600, timeout=1)
+    uart = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=1)
     finger = Adafruit_Fingerprint(uart)
     
     # Setup GPIO for Joystick
