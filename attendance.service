@@ -1,0 +1,31 @@
+[Unit]
+Description=IITDH Biometric Attendance System
+After=multi-user.target
+StartLimitIntervalSec=120
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=bio_user_iitdh
+Group=bio_user_iitdh
+
+WorkingDirectory=/home/bio_user_iitdh/new_env
+ExecStart=/bin/bash /home/bio_user_iitdh/new_env/start.sh
+
+# No TTY — registration is fully headless (OLED + I2C keypad + joystick).
+# StandardInput=tty caused SIGHUP killing the process in <100ms.
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+
+# Hardware group access
+SupplementaryGroups=gpio dialout i2c spi
+
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=0 42
+TimeoutStartSec=infinity
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
